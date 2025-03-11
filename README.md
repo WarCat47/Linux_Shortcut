@@ -1,3 +1,7 @@
+This script runs update, upgrade commands, remove problematic ppas, clean system, and some other functions with just clicks instead of typing lines of codes.
+
+
+Instruction:
 This is a python script. to run it make sure you have a irtual environment with python.
 activate the virtual env and then cd /path/to/script.py
 then make this script executable with chmod +x script.py
