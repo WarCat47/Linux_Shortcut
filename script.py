@@ -55,6 +55,9 @@ class LinuxTroubleshooter(QWidget):
             "Clean system": ["sudo", "apt", "autoremove", "-y"],
             "Read system logs": ["sudo", "journalctl", "-n", "50"],
             "Reboot system": ["sudo", "reboot"],
+            "Check Failed Services": ["systemctl", "list-units", "--failed"],
+            "Boot into Recovery Mode": ["sudo", "systemctl", "reboot", "--recovery"]
+
         }
 
         for label, command in commands.items():
