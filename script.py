@@ -2,7 +2,7 @@
 import sys
 import subprocess
 from PyQt6.QtWidgets import (
-    QApplication, QWidget, QVBoxLayout, QPushButton, QTextEdit, QProgressBar, QFileDialog, QMessageBox,QScrollArea,QFrame
+    QApplication, QWidget, QVBoxLayout, QPushButton, QTextEdit, QProgressBar, QFileDialog, QMessageBox, QScrollArea, QFrame
 )
 from PyQt6.QtCore import QThread, pyqtSignal
 
@@ -45,6 +45,8 @@ class LinuxTroubleshooter(QWidget):
         self.log_area = QTextEdit()
         self.log_area.setReadOnly(True)
         layout.addWidget(self.log_area)
+
+        
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
         scroll_content = QFrame()
@@ -61,18 +63,21 @@ class LinuxTroubleshooter(QWidget):
             "Reboot system": ["sudo", "reboot"],
             "Check Failed Services": ["systemctl", "list-units", "--failed"],
             "Boot into Recovery Mode": ["sudo", "systemctl", "reboot", "--recovery"]
-
         }
 
         for label, command in commands.items():
             btn = QPushButton(label)
             btn.clicked.connect(lambda _, cmd=command: self.run_command(cmd))
-            layout.addWidget(btn)
+            scroll_layout.addWidget(btn)  # Add to scroll_layout instead of layout
 
         # Install .deb file button
         install_deb_btn = QPushButton("Install .deb file")
         install_deb_btn.clicked.connect(self.install_deb)
-        layout.addWidget(install_deb_btn)
+        scroll_layout.addWidget(install_deb_btn)
+
+        scroll_content.setLayout(scroll_layout)
+        scroll_area.setWidget(scroll_content)
+        layout.addWidget(scroll_area)  # Add scroll area to main layout
 
         self.setLayout(layout)
         self.setWindowTitle("Linux Troubleshooter")
@@ -88,20 +93,15 @@ class LinuxTroubleshooter(QWidget):
         file_dialog = QFileDialog()
         file_path, _ = file_dialog.getOpenFileName(self, "Select .deb file", "", "Debian files (*.deb)")
         if file_path:
-            # Check if the package is already installed
             package_name = self.get_package_name(file_path)
             if package_name and self.is_package_installed(package_name):
                 QMessageBox.information(self, "Already Installed", f"{package_name} is already installed.")
                 return
-
-            # Install the package using apt for better dependency resolution
             self.run_command(["sudo", "apt", "install", file_path, "-y"])
 
     def get_package_name(self, file_path):
         try:
-            output = subprocess.run(
-                ["dpkg-deb", "-I", file_path], capture_output=True, text=True
-            ).stdout
+            output = subprocess.run(["dpkg-deb", "-I", file_path], capture_output=True, text=True).stdout
             for line in output.splitlines():
                 if line.startswith(" Package:"):
                     return line.split(":")[1].strip()
@@ -111,9 +111,7 @@ class LinuxTroubleshooter(QWidget):
 
     def is_package_installed(self, package_name):
         try:
-            output = subprocess.run(
-                ["dpkg", "-s", package_name], capture_output=True, text=True
-            ).stdout
+            output = subprocess.run(["dpkg", "-s", package_name], capture_output=True, text=True).stdout
             return "Status: install ok installed" in output
         except Exception as e:
             self.log_area.append(f"❌ Failed to check if installed: {str(e)}")
