@@ -2,7 +2,7 @@
 import sys
 import subprocess
 from PyQt6.QtWidgets import (
-    QApplication, QWidget, QVBoxLayout, QPushButton, QTextEdit, QProgressBar, QFileDialog, QMessageBox
+    QApplication, QWidget, QVBoxLayout, QPushButton, QTextEdit, QProgressBar, QFileDialog, QMessageBox,QScrollArea,QFrame
 )
 from PyQt6.QtCore import QThread, pyqtSignal
 
@@ -45,6 +45,10 @@ class LinuxTroubleshooter(QWidget):
         self.log_area = QTextEdit()
         self.log_area.setReadOnly(True)
         layout.addWidget(self.log_area)
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_content = QFrame()
+        scroll_layout = QVBoxLayout(scroll_content)
 
         commands = {
             "Check for updates": ["sudo", "apt", "update"],
